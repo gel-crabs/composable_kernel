@@ -34,6 +34,46 @@ struct BaseGemmPipelineAgBgCrCompAsync
             return TailNumber::Two;
         }
     }
+
+    template <typename RunFunction>
+    CK_TILE_HOST_DEVICE static auto
+    TailHandler(const RunFunction& run_func, bool has_hot_loop, TailNumber tail_number)
+    {
+        // Handle all the valid cases.
+        if(has_hot_loop)
+        {
+            if(tail_number == TailNumber::Three)
+            {
+                return run_func(bool_constant<true>{},
+                                integral_constant<TailNumber, TailNumber::Three>{});
+            }
+            else if(tail_number == TailNumber::Two)
+            {
+                return run_func(bool_constant<true>{},
+                                integral_constant<TailNumber, TailNumber::Two>{});
+            }
+        }
+        else
+        {
+            if(tail_number == TailNumber::Three)
+            {
+                return run_func(bool_constant<false>{},
+                                integral_constant<TailNumber, TailNumber::Three>{});
+            }
+            else if(tail_number == TailNumber::Two)
+            {
+                return run_func(bool_constant<false>{},
+                                integral_constant<TailNumber, TailNumber::Two>{});
+            }
+        }
+        // If execution reaches here, it's an invalid tail_number because it wasn't handled above.
+#if defined(__HIP_DEVICE_COMPILE__)
+        __builtin_unreachable();
+#else
+        throw std::logic_error("Invalid TailNumber: Only TailNumber::Full and smaller than "
+                               "PrefetchStages are supported.");
+#endif
+    }
 };
 
 /**
@@ -82,12 +122,23 @@ struct GemmPipelineAgBgCrCompAsync : public BaseGemmPipelineAgBgCrCompAsync<Prob
     static constexpr index_t NPerBlock = BlockGemmShape::kN;
     static constexpr index_t KPerBlock = BlockGemmShape::kK;
 
-    static constexpr index_t GetVectorSizeA() { return Policy::template GetVectorSizeA<Problem>(); }
-    static constexpr index_t GetVectorSizeB() { return Policy::template GetVectorSizeB<Problem>(); }
+    template <bool IsWave32Host = false>
+    static constexpr index_t GetVectorSizeA()
+    {
+        return Policy::template GetVectorSizeA<Problem, IsWave32Host>();
+    }
+    template <bool IsWave32Host = false>
+    static constexpr index_t GetVectorSizeB()
+    {
+        return Policy::template GetVectorSizeB<Problem, IsWave32Host>();
+    }
     static constexpr index_t GetVectorSizeC() { return Policy::template GetVectorSizeC<Problem>(); }
 
     static constexpr index_t GetSmemPackA() { return Policy::template GetSmemPackA<Problem>(); }
     static constexpr index_t GetSmemPackB() { return Policy::template GetSmemPackB<Problem>(); }
+
+    static constexpr index_t NumWaveGroups = Problem::NumWaveGroups;
+    static constexpr index_t Preshuffle    = Problem::Preshuffle;
 
     static constexpr bool kPadM = Problem::kPadM;
     static constexpr bool kPadN = Problem::kPadN;
