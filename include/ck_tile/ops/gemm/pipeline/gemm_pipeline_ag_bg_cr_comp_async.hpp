@@ -371,11 +371,11 @@ struct GemmPipelineAgBgCrCompAsync : public BaseGemmPipelineAgBgCrCompAsync<Prob
                                  {0, 0},
                                  BLdsTileDistr);
 
-            static_assert(
-                !(is_tile_window_linear_v<decltype(a_lds_ld_window0)>)&&!(is_tile_window_linear_v<decltype(a_lds_ld_window1)>)&&!(
-                    is_tile_window_linear_v<
-                        decltype(b_lds_ld_window0)>)&&!(is_tile_window_linear_v<decltype(b_lds_ld_window1)>),
-                "LDS windows must not be linear");
+            static_assert(!(is_tile_window_linear_v<decltype(a_lds_ld_window0)>) &&
+                              !(is_tile_window_linear_v<decltype(a_lds_ld_window1)>) &&
+                              !(is_tile_window_linear_v<decltype(b_lds_ld_window0)>) &&
+                              !(is_tile_window_linear_v<decltype(b_lds_ld_window1)>),
+                          "LDS windows must not be linear");
             buffer_load_fence(a_number_of_access + b_number_of_access);
 
             Base::LocalPrefetch(a_block_tile0, a_lds_ld_window0);
@@ -441,7 +441,7 @@ struct GemmPipelineAgBgCrCompAsync : public BaseGemmPipelineAgBgCrCompAsync<Prob
                 {
                     buffer_load_fence(0);
                     Base::LocalPrefetch(a_block_tile0, a_lds_ld_window0);
-                    Base::LocalPrefetch(a_block_tile0, a_lds_ld_window0);
+                    Base::LocalPrefetch(b_block_tile0, b_lds_ld_window0);
                     block_gemm(c_block_tile, a_block_tile1, b_block_tile1);
                 }
                 // 1
