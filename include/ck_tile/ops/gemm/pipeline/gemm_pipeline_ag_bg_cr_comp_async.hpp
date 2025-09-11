@@ -377,6 +377,7 @@ struct GemmPipelineAgBgCrCompAsync : public BaseGemmPipelineAgBgCrCompAsync<Prob
                               !(is_tile_window_linear_v<decltype(b_lds_ld_window1)>),
                           "LDS windows must not be linear");
             buffer_load_fence(a_number_of_access + b_number_of_access);
+            buffer_sync_lds();
 
             Base::LocalPrefetch(a_block_tile0, a_lds_ld_window0);
             Base::LocalPrefetch(b_block_tile0, b_lds_ld_window0);
@@ -395,7 +396,7 @@ struct GemmPipelineAgBgCrCompAsync : public BaseGemmPipelineAgBgCrCompAsync<Prob
                 {
                     // ping
                     {
-                        buffer_load_fence(a_number_of_access + b_number_of_access);
+                        block_sync_lds();
                         Base::LocalPrefetch(a_block_tile1, a_lds_ld_window1);
                         Base::LocalPrefetch(b_block_tile1, b_lds_ld_window1);
                         block_sync_lds();
@@ -410,7 +411,7 @@ struct GemmPipelineAgBgCrCompAsync : public BaseGemmPipelineAgBgCrCompAsync<Prob
                     }
                     // pong
                     {
-                        buffer_load_fence(a_number_of_access + b_number_of_access);
+                        block_sync_lds();
                         Base::LocalPrefetch(a_block_tile0, a_lds_ld_window0);
                         Base::LocalPrefetch(b_block_tile0, b_lds_ld_window0);
                         block_sync_lds();
@@ -432,20 +433,21 @@ struct GemmPipelineAgBgCrCompAsync : public BaseGemmPipelineAgBgCrCompAsync<Prob
             {
                 // 3
                 {
-                    buffer_load_fence(a_number_of_access + b_number_of_access);
+                    block_sync_lds();
                     Base::LocalPrefetch(a_block_tile1, a_lds_ld_window1);
                     Base::LocalPrefetch(b_block_tile1, b_lds_ld_window1);
                     block_gemm(c_block_tile, a_block_tile0, b_block_tile0);
                 }
                 // 2
                 {
-                    buffer_load_fence(0);
+                    block_sync_lds();
                     Base::LocalPrefetch(a_block_tile0, a_lds_ld_window0);
                     Base::LocalPrefetch(b_block_tile0, b_lds_ld_window0);
                     block_gemm(c_block_tile, a_block_tile1, b_block_tile1);
                 }
                 // 1
                 {
+                    block_sync_lds();
                     block_gemm(c_block_tile, a_block_tile0, b_block_tile0);
                     __builtin_amdgcn_sched_barrier(0);
                 }
@@ -454,7 +456,7 @@ struct GemmPipelineAgBgCrCompAsync : public BaseGemmPipelineAgBgCrCompAsync<Prob
             {
                 // 2
                 {
-                    buffer_load_fence(0);
+                    block_sync_lds();
                     Base::LocalPrefetch(a_block_tile1, a_lds_ld_window1);
                     Base::LocalPrefetch(b_block_tile1, b_lds_ld_window1);
                     block_gemm(c_block_tile, a_block_tile0, b_block_tile0);
@@ -467,6 +469,7 @@ struct GemmPipelineAgBgCrCompAsync : public BaseGemmPipelineAgBgCrCompAsync<Prob
                 }
                 // 1
                 {
+                    block_sync_lds();
                     block_gemm(c_block_tile, a_block_tile1, b_block_tile1);
                     __builtin_amdgcn_sched_barrier(0);
                 }
