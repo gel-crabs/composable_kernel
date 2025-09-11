@@ -377,7 +377,7 @@ struct GemmPipelineAgBgCrCompAsync : public BaseGemmPipelineAgBgCrCompAsync<Prob
                               !(is_tile_window_linear_v<decltype(b_lds_ld_window1)>),
                           "LDS windows must not be linear");
             buffer_load_fence(a_number_of_access + b_number_of_access);
-            buffer_sync_lds();
+            block_sync_lds();
 
             Base::LocalPrefetch(a_block_tile0, a_lds_ld_window0);
             Base::LocalPrefetch(b_block_tile0, b_lds_ld_window0);
