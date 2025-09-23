@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ck_tile/core.hpp"
+#include <cstdint>
 
 namespace ck_tile {
 enum StreamKReductionStrategy : uint32_t
