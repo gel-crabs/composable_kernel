@@ -74,6 +74,9 @@ constexpr auto is_row_major(Layout)
     return ck_tile::bool_constant<std::is_same_v<Layout, ck_tile::tensor_layout::gemm::RowMajor>>{};
 }
 
+// Declaration clashes with `include/ck_tile/host/permute_pk_int4.hpp`
+namespace gemm_common {
+
 // Permutation function for pk_int4_t
 template <typename Tensor>
 void permute_vectors_i4x4_b(Tensor& tensor)
@@ -125,6 +128,8 @@ void permute_vectors_i4x4_b(Tensor& tensor)
         }
     }
 }
+
+} // namespace gemm_common
 
 // Structure to hold kernel traits for dispatcher
 struct KernelTraits
