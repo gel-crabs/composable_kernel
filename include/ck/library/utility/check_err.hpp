@@ -157,6 +157,7 @@ double get_absolute_threshold(const double max_possible_num, const int number_of
     return std::max(acc_error, midway_error);
 }
 
+// TODO(LYM): chang for tf32
 template <typename Range, typename RefRange>
 typename std::enable_if<
     std::is_same_v<ranges::range_value_t<Range>, ranges::range_value_t<RefRange>> &&
