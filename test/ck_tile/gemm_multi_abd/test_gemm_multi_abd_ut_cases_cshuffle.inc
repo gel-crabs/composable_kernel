@@ -1,5 +1,6 @@
 #pragma once
 
+
 TYPED_TEST(TestCkTileGemmMultiABD, TestCkTileGemmMultiABDKBatch2CShuffle_512x512x512)
 {
     constexpr int M      = 512;
