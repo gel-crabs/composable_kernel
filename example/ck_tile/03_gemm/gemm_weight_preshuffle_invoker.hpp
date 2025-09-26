@@ -137,8 +137,8 @@ struct WeightPreshuffleInvoker
                           << "pipeline: " << GemmPipeline::GetName() << '\n'
                           << "grid: {" << grids.x << ", " << grids.y << ", " << grids.z << "}"
                           << ", blocks: {" << blocks.x << ", " << blocks.y << ", " << blocks.z
-                          << "}"
-                          << ", kBlockPerCu: {" << GemmConfig::kBlockPerCu << "}" << std::endl;
+                          << "}" << ", kBlockPerCu: {" << GemmConfig::kBlockPerCu << "}"
+                          << std::endl;
             }
             if(s.flush_cache_)
             {

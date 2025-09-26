@@ -232,10 +232,8 @@ class GemmMultiDProfiler
                 {
                     file << "rocm_version,device_name,"
                          << "split_k,m,n,k,stride_a,stride_b,stride_c,"
-                         << "dtype_a,dtype_b,dtype_acc,dtype_c,"
-                         << "layout_a,layout_b,layout_c,"
-                         << "structured_sparsity,"
-                         << "name,"
+                         << "dtype_a,dtype_b,dtype_acc,dtype_c," << "layout_a,layout_b,layout_c,"
+                         << "structured_sparsity," << "name,"
                          << "latency(ms),tflops(TFlops),bandwidth(GB/s),metric\n";
                 }
 
@@ -251,11 +249,11 @@ class GemmMultiDProfiler
                      << problem.dtype_d0_ << "," << problem.dtype_d1_ << "," << problem.dtype_acc_
                      << "," << problem.dtype_e_ << "," << problem.layout_a_ << ","
                      << problem.layout_b_ << "," << problem.layout_d0_ << "," << problem.layout_d1_
-                     << "," << problem.layout_e_ << ","
-                     << "," << name << "," << std::fixed << std::setprecision(4) << perf.latency_
-                     << "," << std::fixed << std::setprecision(4) << perf.tflops_ << ","
-                     << std::fixed << std::setprecision(4) << perf.bandwidth_ << ","
-                     << get_metric_name(metric) << "\n";
+                     << "," << problem.layout_e_ << "," << "," << name << "," << std::fixed
+                     << std::setprecision(4) << perf.latency_ << "," << std::fixed
+                     << std::setprecision(4) << perf.tflops_ << "," << std::fixed
+                     << std::setprecision(4) << perf.bandwidth_ << "," << get_metric_name(metric)
+                     << "\n";
 
                 if(!file)
                 {

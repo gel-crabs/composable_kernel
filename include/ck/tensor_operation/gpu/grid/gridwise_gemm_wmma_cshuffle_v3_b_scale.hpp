@@ -256,16 +256,12 @@ struct GridwiseGemm_wmma_cshuffle_v3_b_scale
 
         __host__ void Print() const
         {
-            std::cout << "problem {"
-                      << "M:" << M << ", "
-                      << "N:" << N << ", "
-                      << "K:" << K << ", "
+            std::cout << "problem {" << "M:" << M << ", " << "N:" << N << ", " << "K:" << K << ", "
                       << "SAs: {";
             static_for<0, NumATensor, 1>{}([&](auto i) {
                 std::cout << StrideAs[i] << (i.value < NumATensor - 1 ? ", " : "");
             });
-            std::cout << "}, "
-                      << "SBs: {";
+            std::cout << "}, " << "SBs: {";
             static_for<0, NumBTensor, 1>{}([&](auto i) {
                 std::cout << StrideBs[i] << (i.value < NumBTensor - 1 ? ", " : "");
             });
@@ -278,16 +274,11 @@ struct GridwiseGemm_wmma_cshuffle_v3_b_scale
                 });
                 std::cout << " }, ";
             }
-            std::cout << "SE:" << StrideE << ", "
-                      << "SScaleB:" << StrideScaleB << ", "
-                      << "MP:" << MPadded << ", "
-                      << "NP:" << NPadded << ", "
-                      << "KRead:" << KRead << ", "
-                      << "KP:" << KPadded << ", "
-                      << "AK0:" << AK0 << ", "
-                      << "BK0:" << BK0 << ", "
-                      << "MBlock: " << MBlock << ", "
-                      << "NBlock: " << NBlock << "}" << std::endl;
+            std::cout << "SE:" << StrideE << ", " << "SScaleB:" << StrideScaleB << ", "
+                      << "MP:" << MPadded << ", " << "NP:" << NPadded << ", " << "KRead:" << KRead
+                      << ", " << "KP:" << KPadded << ", " << "AK0:" << AK0 << ", " << "BK0:" << BK0
+                      << ", " << "MBlock: " << MBlock << ", " << "NBlock: " << NBlock << "}"
+                      << std::endl;
         }
 
         index_t M;
