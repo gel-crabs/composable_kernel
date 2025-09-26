@@ -183,7 +183,7 @@ int run_grouped_gemm_example_with_layouts(int argc,
     if(!valid_input_data(group_count, Ms, Ns, Ks, stride_As, stride_Bs, stride_Cs))
     {
         std::cout << "Please check the input data. Default values will be used." << std::endl;
-        
+
         // Clear existing (invalid) data before adding defaults
         Ms.clear();
         Ns.clear();
@@ -193,7 +193,7 @@ int run_grouped_gemm_example_with_layouts(int argc,
         stride_Cs.clear();
         stride_AQs.clear();
         stride_BQs.clear();
-        
+
         for(int i = 0; i < group_count; i++)
         {
             Ms.push_back(256 + 256 * i);
@@ -262,9 +262,10 @@ int run_grouped_gemm_example_with_layouts(int argc,
         bq_tensors.push_back(ck_tile::HostTensor<BQDataType>(
             ck_tile::host_tensor_descriptor(1, N, stride_BQs[i], is_row_major(bq_layout))));
 
-        std::cout << "gemm[" << i << "]" << " a_m_k: " << a_m_k_tensors[i].mDesc
-                  << " b_k_n: " << b_k_n_tensors[i].mDesc << " c_m_n: " << c_m_n_tensors[i].mDesc
-                  << " aq: " << aq_tensors[i].mDesc << " bq: " << bq_tensors[i].mDesc << std::endl;
+        std::cout << "gemm[" << i << "]"
+                  << " a_m_k: " << a_m_k_tensors[i].mDesc << " b_k_n: " << b_k_n_tensors[i].mDesc
+                  << " c_m_n: " << c_m_n_tensors[i].mDesc << " aq: " << aq_tensors[i].mDesc
+                  << " bq: " << bq_tensors[i].mDesc << std::endl;
 
         ck_tile::FillUniformDistribution<ADataType>{-1.f, 1.f}(a_m_k_tensors[i]);
         ck_tile::FillUniformDistribution<BDataType>{-1.f, 1.f}(b_k_n_tensors[i]);
