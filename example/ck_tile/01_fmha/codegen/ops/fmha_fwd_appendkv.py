@@ -318,6 +318,9 @@ class KernelComponentFactoryGfx9(KernelComponentFactoryBase):
     arch = 'gfx9'
 
 class KernelComponentFactoryGfx12(KernelComponentFactoryBase):
+    arch = 'gfx11'
+
+class KernelComponentFactoryGfx12(KernelComponentFactoryBase):
     arch = 'gfx12'
 
 def get_factory(target: str):
@@ -327,6 +330,9 @@ def get_factory(target: str):
         return KernelComponentFactoryGfx9
 
     if target.startswith('gfx11'):
+        return KernelComponentFactoryGfx11
+
+    if target.startswith('gfx12'):
         return KernelComponentFactoryGfx12
 
     raise Exception(f'Unsupported device target {target}')

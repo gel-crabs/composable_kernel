@@ -697,6 +697,28 @@ class KernelComponentFactoryGfx9(KernelComponentFactoryBase):
         else:
             return None
 
+class KernelComponentFactoryGfx11(KernelComponentFactoryBase):
+    arch = 'gfx11'
+
+    @staticmethod
+    def get_hdim_tile_size_dict(dtype: str) -> Optional[dict]:
+        if dtype in ['fp16', 'bf16']:
+            return {
+                #                       bm0, bn0, bk0, bn1, bk1,
+                '32'  : FmhaFwdTileSize( 64,  64,  16,  32,  32,   32,  4, 1, 1,  4, 1, 1,  16, 16, 16,  16, 16, 16,  -1),
+                '64'  : FmhaFwdTileSize( 64,  64,  32,  64,  32,   64,  4, 1, 1,  4, 1, 1,  16, 16, 16,  16, 16, 16,  -1),
+                '128' : FmhaFwdTileSize( 64,  64,  32, 128,  32,  128,  4, 1, 1,  4, 1, 1,  16, 16, 16,  16, 16, 16,  -1),
+                '256' : FmhaFwdTileSize( 64,  64,  32, 256,  32,  256,  4, 1, 1,  4, 1, 1,  16, 16, 16,  16, 16, 16,  -1),
+            }
+        elif dtype in ['fp8', 'bf8']:
+            return {
+                #                       bm0, bn0, bk0, bn1, bk1,
+                '64'  : FmhaFwdTileSize(128,  64,  32,  64,  32,   64,  4, 1, 1,  4, 1, 1,  16, 16, 16,  16, 16, 16,  -1),
+                '128' : FmhaFwdTileSize( 64,  64,  32, 128,  32,  128,  4, 1, 1,  4, 1, 1,  16, 16, 16,  16, 16, 16,  -1),
+            }
+        else:
+            return None
+
 class KernelComponentFactoryGfx12(KernelComponentFactoryBase):
     arch = 'gfx12'
 
@@ -726,6 +748,9 @@ def get_factory(target: str):
         return KernelComponentFactoryGfx9
 
     if target.startswith('gfx11'):
+        return KernelComponentFactoryGfx11
+
+    if target.startswith('gfx12'):
         return KernelComponentFactoryGfx12
 
     raise Exception(f'Unsupported device target {target}')
