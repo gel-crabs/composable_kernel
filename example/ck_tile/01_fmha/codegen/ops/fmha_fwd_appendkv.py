@@ -317,7 +317,7 @@ class KernelComponentFactoryBase:
 class KernelComponentFactoryGfx9(KernelComponentFactoryBase):
     arch = 'gfx9'
 
-class KernelComponentFactoryGfx12(KernelComponentFactoryBase):
+class KernelComponentFactoryGfx11(KernelComponentFactoryBase):
     arch = 'gfx11'
 
 class KernelComponentFactoryGfx12(KernelComponentFactoryBase):
