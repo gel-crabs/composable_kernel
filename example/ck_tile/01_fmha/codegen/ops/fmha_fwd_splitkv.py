@@ -710,12 +710,6 @@ class KernelComponentFactoryGfx11(KernelComponentFactoryBase):
                 '128' : FmhaFwdTileSize( 64,  64,  32, 128,  32,  128,  4, 1, 1,  4, 1, 1,  16, 16, 16,  16, 16, 16,  -1),
                 '256' : FmhaFwdTileSize( 64,  64,  32, 256,  32,  256,  4, 1, 1,  4, 1, 1,  16, 16, 16,  16, 16, 16,  -1),
             }
-        elif dtype in ['fp8', 'bf8']:
-            return {
-                #                       bm0, bn0, bk0, bn1, bk1,
-                '64'  : FmhaFwdTileSize(128,  64,  32,  64,  32,   64,  4, 1, 1,  4, 1, 1,  16, 16, 16,  16, 16, 16,  -1),
-                '128' : FmhaFwdTileSize( 64,  64,  32, 128,  32,  128,  4, 1, 1,  4, 1, 1,  16, 16, 16,  16, 16, 16,  -1),
-            }
         else:
             return None
 
