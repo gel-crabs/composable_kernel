@@ -31,7 +31,7 @@ K0_MAX_SUBMAX_MAP = {
 }
 
 FMHA_BATCH_PREFILL_PIPELINE_MAP = {
-    #"qr_async" : "ck_tile::BlockFmhaBatchPrefillPipelineQRKSVSAsync",
+    "qr_async" : "ck_tile::BlockFmhaBatchPrefillPipelineQRKSVSAsync",
 }
 
 FMHA_FWD_KERNEL_HEADER = """// SPDX-License-Identifier: MIT
@@ -490,7 +490,12 @@ class FmhaFwdKernel:
 class KernelComponentFactory:
     @staticmethod
     def get_hdim_tile_size_dict(dtype : str) -> Optional[dict]:
-        return None
+        if dtype == 'fp16' or dtype == 'bf16':
+            return {
+                128 : [FmhaFwdTileSize(128, 128, 32, 128, 32,  128,  4, 1, 1,  4, 1, 1,  32, 32, 16,  32, 32, 16,  -1)],
+            }
+        else:
+            return None
 
     @staticmethod
     def get_pipelines(dtype, hdim, receipt, mask_impl) -> List[FmhaFwdPipeline]:
@@ -500,13 +505,24 @@ class KernelComponentFactory:
         # TODO: how to design this more generic?
         squant = 't' if dtype == 'fp8' else 'f'
         pipelines = []
-        assert False
+        if dtype in ['fp16', 'bf16']:
+            for logits, mask, bias, lse, dropout in itertools.product(["t", "f"], get_mask_map(mask_impl).keys(), BIAS_MAP.keys(), ["t", "f"], ["t", "f"]):
+                    pipelines.append(FmhaFwdPipeline('qr_async', 'row', 't', 'f', 't', 't', logits, bias, lse, dropout, squant, mask))
+                    pipelines.append(FmhaFwdPipeline('qr_async', 'row', 't', 't', 't', 't', logits, bias, lse, dropout, squant, mask))
+                    # pipelines.append(FmhaFwdPipeline('qr_async', 'col', 't', 'f', 't', 't', logits, bias, lse, dropout, squant, mask))
+                    # pipelines.append(FmhaFwdPipeline('qr_async', 'col', 't', 't', 't', 't', logits, bias, lse, dropout, squant, mask))
+        else:
+            assert False
         return pipelines
 
 class CustomFactory(KernelComponentFactory):
     @staticmethod
     def get_hdim_tile_size_dict(dtype : str) -> Optional[dict]:
-        return None
+        result = KernelComponentFactory.get_hdim_tile_size_dict(dtype)
+        if dtype == 'fp16' or dtype == 'bf16':
+            if 128 in result.keys():
+                result[128].insert(0, FmhaFwdTileSize( 64, 128, 64, 128, 64,  128,  4, 1, 1,  4, 1, 1,  16, 16, 16,  16, 16, 16,  -1, CppConstraint('get_num_blocks(128) < num_cus * min_cu_util_rate')))
+        return result
 
 def get_fwd_blobs(kernel_filter : Optional[str], receipt, optdim_list, mask_impl) -> Tuple[FmhaFwdApiPool, List[FmhaFwdKernel]]:
     # TODO: we don't support tuning yet, so pick up one value for vlayout/pipeline/pad
