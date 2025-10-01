@@ -31,7 +31,7 @@ K0_MAX_SUBMAX_MAP = {
 }
 
 FMHA_BATCH_PREFILL_PIPELINE_MAP = {
-    "qr_async" : "ck_tile::BlockFmhaBatchPrefillPipelineQRKSVSAsync",
+    #"qr_async" : "ck_tile::BlockFmhaBatchPrefillPipelineQRKSVSAsync",
 }
 
 FMHA_FWD_KERNEL_HEADER = """// SPDX-License-Identifier: MIT
