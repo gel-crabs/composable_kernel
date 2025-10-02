@@ -260,6 +260,15 @@ CK_TILE_HOST_DEVICE constexpr const char* address_space_to_string(address_space_
 }
 
 // Architecture tags
+struct default_arch_tag
+{
+};
+struct gfx9_t
+{
+};
+struct gfx950_t
+{
+};
 struct gfx11_t
 {
 };

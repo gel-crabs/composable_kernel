@@ -15,7 +15,7 @@
 
 namespace ck_tile {
 
-template <int MinBlockPerCu, typename Kernel, typename... Args>
+template <int MinBlockPerCu, typename Arch, typename Kernel, typename... Args>
 #if CK_TILE_USE_LAUNCH_BOUNDS
 __launch_bounds__(Kernel::kBlockSize, MinBlockPerCu)
 #endif
@@ -35,11 +35,18 @@ __launch_bounds__(Kernel::kBlockSize, MinBlockPerCu)
 //
 // the "static __device__ operator()(some_arg)" is the entry point of KernelImpl
 //
-template <int MinBlockPerCu = CK_TILE_MIN_BLOCK_PER_CU, typename KernelImpl, typename... Args>
+// Arch can be used to support linking multiple object files that have the same kernel compiled for
+// different architectures. In such case each binary have to use a different tag (gfx9_t, gfx12_t
+// etc.). When this feature is not needed, use default_arch_tag.
+//
+template <int MinBlockPerCu = CK_TILE_MIN_BLOCK_PER_CU,
+          typename Arch     = default_arch_tag,
+          typename KernelImpl,
+          typename... Args>
 CK_TILE_HOST auto
 make_kernel(KernelImpl /*f*/, dim3 grid_dim, dim3 block_dim, std::size_t lds_byte, Args... args)
 {
-    const auto kernel = kentry<MinBlockPerCu, KernelImpl, Args...>;
+    const auto kernel = kentry<MinBlockPerCu, Arch, KernelImpl, Args...>;
     return [=](const stream_config& s) {
         kernel<<<grid_dim, block_dim, lds_byte, s.stream_id_>>>(args...);
     };
