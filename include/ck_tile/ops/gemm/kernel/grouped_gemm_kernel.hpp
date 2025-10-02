@@ -191,7 +191,7 @@ struct GroupedGemmKernel
     CK_TILE_HOST static auto MaxOccupancyGridSize(const stream_config& s) -> dim3
     {
         using ConstantPointer = const void CK_CONSTANT_ADDRESS_SPACE*;
-        const auto kernel     = kentry<1, Kernel, ConstantPointer, index_t>;
+        const auto kernel = kentry<1, ck_tile::default_arch_tag, Kernel, ConstantPointer, index_t>;
         int occupancy;
         HIP_CHECK_ERROR(
             hipOccupancyMaxActiveBlocksPerMultiprocessor(&occupancy, kernel, kBlockSize, 0));
@@ -324,10 +324,18 @@ struct GroupedGemmKernel
         }
         else // SingleSmemBuffer
         {
+
             if constexpr(UsePersistentKernel)
             {
-                RunGemmWithPipelineSelection(
-                    a_ptr, b_ptr, c_ptr, smem_ptr_0, kargs, splitk_batch_offset, i_m, i_n);
+                RunGemmWithPipelineSelection(a_ptr,
+                                             b_ptr,
+                                             kargs.ds_ptr,
+                                             c_ptr,
+                                             smem_ptr_0,
+                                             kargs,
+                                             splitk_batch_offset,
+                                             i_m,
+                                             i_n);
             }
             else // Non-persistent kernel
             {
@@ -365,6 +373,7 @@ struct GroupedGemmKernel
     CK_TILE_DEVICE static void
     RunGemmWithPipelineSelection(const ADataType* a_ptr,
                                  const BDataType* b_ptr,
+                                 const std::array<const void*, NumDTensor_>& ds_ptr,
                                  CDataType* c_ptr,
                                  void* smem_ptr_0,
                                  const UniversalGemmKernelArgs<1, 1, NumDTensor_>& kargs,
@@ -375,7 +384,7 @@ struct GroupedGemmKernel
         // Create Gemm tensor views, pad views and tile windows
         const auto& gemm_tensor_views_tuple =
             Base::template MakeGemmTensorViews<EpiloguePipeline::MemoryOperation>(
-                {a_ptr}, {b_ptr}, {/*ds_ptr*/}, c_ptr, kargs, splitk_batch_offset.splitted_k);
+                {a_ptr}, {b_ptr}, ds_ptr, c_ptr, kargs, splitk_batch_offset.splitted_k);
 
         const auto& gemm_pad_views = Base::MakeGemmPadViews(gemm_tensor_views_tuple);
         auto gemm_tile_windows =

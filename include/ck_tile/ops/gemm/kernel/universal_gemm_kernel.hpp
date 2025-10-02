@@ -278,7 +278,7 @@ struct UniversalGemmKernel
     CK_TILE_HOST static auto MaxOccupancyGridSize(const stream_config& s) -> dim3
     {
         using Kernel      = UniversalGemmKernel<TilePartitioner, GemmPipeline, EpiloguePipeline>;
-        const auto kernel = kentry<1, Kernel, KernelArgs>;
+        const auto kernel = kentry<1, ck_tile::default_arch_tag, Kernel, KernelArgs>;
         int occupancy;
         hip_check_error(
             hipOccupancyMaxActiveBlocksPerMultiprocessor(&occupancy, kernel, BlockSize().x, 0));
