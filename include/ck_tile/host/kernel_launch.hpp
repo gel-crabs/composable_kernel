@@ -15,7 +15,20 @@
 
 namespace ck_tile {
 
-template <int MinBlockPerCu, typename Arch, typename Kernel, typename... Args>
+template <int MinBlockPerCu, typename Kernel, typename... Args>
+#if CK_TILE_USE_LAUNCH_BOUNDS
+__launch_bounds__(Kernel::kBlockSize, MinBlockPerCu)
+#endif
+    __global__ void kentry(Args... args)
+{
+#if defined(__HIP_DEVICE_COMPILE__)
+    Kernel{}(args...);
+#else
+    (..., (ignore = args, 0));
+#endif
+}
+
+template <typename Arch, int MinBlockPerCu, typename Kernel, typename... Args>
 #if CK_TILE_USE_LAUNCH_BOUNDS
 __launch_bounds__(Kernel::kBlockSize, MinBlockPerCu)
 #endif
@@ -36,17 +49,26 @@ __launch_bounds__(Kernel::kBlockSize, MinBlockPerCu)
 // the "static __device__ operator()(some_arg)" is the entry point of KernelImpl
 //
 // Arch can be used to support linking multiple object files that have the same kernel compiled for
-// different architectures. In such case each binary have to use a different tag (gfx9_t, gfx12_t
-// etc.). When this feature is not needed, use default_arch_tag.
+// different architectures. In this case each object file has to use a different tag (gfx9_t,
+// gfx12_t etc.), so the kernel will have different symbols for each architecture.
 //
 template <int MinBlockPerCu = CK_TILE_MIN_BLOCK_PER_CU,
-          typename Arch     = default_arch_tag,
+          typename Arch     = void,
           typename KernelImpl,
           typename... Args>
 CK_TILE_HOST auto
 make_kernel(KernelImpl /*f*/, dim3 grid_dim, dim3 block_dim, std::size_t lds_byte, Args... args)
 {
-    const auto kernel = kentry<MinBlockPerCu, Arch, KernelImpl, Args...>;
+    const auto kernel = []() {
+        if constexpr(std::is_void_v<Arch>)
+        {
+            return kentry<MinBlockPerCu, KernelImpl, Args...>;
+        }
+        else
+        {
+            return kentry<Arch, MinBlockPerCu, KernelImpl, Args...>;
+        }
+    }();
     return [=](const stream_config& s) {
         kernel<<<grid_dim, block_dim, lds_byte, s.stream_id_>>>(args...);
     };
