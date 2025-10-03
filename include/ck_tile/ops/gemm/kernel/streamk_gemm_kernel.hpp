@@ -360,7 +360,7 @@ struct StreamKKernel
 
         // Since occupancy of 1 is valid for stream k, we set min_num_block_per_cu to 1
         constexpr int min_block_per_cu = 1;
-        const auto kernel = kentry<min_block_per_cu, ck_tile::default_arch_tag, Kernel, KernelArgs>;
+        const auto kernel              = kentry<min_block_per_cu, Kernel, KernelArgs>;
 
         hip_check_error(
             hipOccupancyMaxActiveBlocksPerMultiprocessor(&occupancy, kernel, kBlockSize, 0));

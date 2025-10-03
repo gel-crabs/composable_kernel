@@ -115,8 +115,7 @@ struct matrix_core_swizzle_kernel
 
     __host__ void operator()(const ck_tile::stream_config& s) const
     {
-        ck_tile::kentry<1, ck_tile::default_arch_tag, kernel>
-            <<<grids, BLOCK_SIZE, 0, s.stream_id_>>>(a);
+        ck_tile::kentry<1, kernel><<<grids, BLOCK_SIZE, 0, s.stream_id_>>>(a);
     }
 
     struct kernel
