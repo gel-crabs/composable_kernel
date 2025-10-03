@@ -208,7 +208,7 @@ struct QuantGroupedGemmKernel
      */
     CK_TILE_HOST static auto MaxOccupancyGridSize(const stream_config& s) -> dim3
     {
-        using ConstantPointer = const void CK_CONSTANT_ADDRESS_SPACE*;
+        using ConstantPointer  = const void CK_CONSTANT_ADDRESS_SPACE*;
         const auto kernel_func = kentry<1, Kernel, ConstantPointer, index_t>;
         int occupancy;
         HIP_CHECK_ERROR(
