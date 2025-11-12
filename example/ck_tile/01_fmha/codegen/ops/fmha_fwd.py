@@ -252,11 +252,11 @@ class FmhaFwdApiTrait:
     def scheck(self) -> str:
         if self.mode == "group":
             return "true/*group mode spad always true*/"  # group mode only generate spad/skpad == true
-        #if self.pipeline_tag in ["qr_async", "qr_async_trload"]:
-        #    if self.spad == "t":
-        #        return "true"  # always support
-        #    else:
-        #        return "true"
+        if self.pipeline_tag in ["qr_async", "qr_async_trload"]:
+            if self.spad == "t":
+                return "true"  # always support
+            else:
+                return "true"
         elif self.pipeline_tag in ["qr", "qs"]:
             if self.spad == "t":
                 return f"true /*a.seqlen_q % {self.bm0} != 0*/"  # TODO: order of get_pipelines() matters! (ugly)
@@ -275,33 +275,33 @@ class FmhaFwdApiTrait:
     def skcheck(self) -> str:
         if self.mode == "group":
             return "true/*group mode skpad always true*/"  # group mode only generate spad/skpad == true
-        #if self.pipeline_tag == "qr_async":
-        #    if self.skpad == "t":
-        #        return f"(a.cu_seqlen_k_ptr != nullptr) || (a.seqlen_k == 0 || a.seqlen_k % {self.bn0} != 0)"
-        #    else:
-        #        return f"(a.cu_seqlen_k_ptr == nullptr) && (a.seqlen_k != 0 && a.seqlen_k % {self.bn0} == 0)"
+        if self.pipeline_tag == "qr_async":
+            if self.skpad == "t":
+                return f"(a.cu_seqlen_k_ptr != nullptr) || (a.seqlen_k == 0 || a.seqlen_k % {self.bn0} != 0)"
+            else:
+                return f"(a.cu_seqlen_k_ptr == nullptr) && (a.seqlen_k != 0 && a.seqlen_k % {self.bn0} == 0)"
         elif self.pipeline_tag in ["qr", "qs"]:
             if self.skpad == "t":
                 return f"true /*a.seqlen_k % {self.bn0} != 0*/"  # TODO: order of get_pipelines() matters! (ugly)
             else:
                 return f"(a.cu_seqlen_k_ptr == nullptr) && (a.seqlen_k != 0 && a.seqlen_k % {self.bn0} == 0)"
-        #elif self.pipeline_tag == "qr_async_trload":
-        #    if self.skpad == "t":
-        #        return "true"
-        #    else:
-        #        return "true"
+        elif self.pipeline_tag == "qr_async_trload":
+            if self.skpad == "t":
+                return "true"
+            else:
+                return "true"
         else:
             assert False
 
     @property
     def dcheck(self) -> str:
-        #if self.pipeline_tag == "qr_async":
-        #    vec = int((32 * 4) / DTYPE_BITS[self.dtype])
-        #    if self.dpad == "t":
-        #        return f"a.hdim_q % {vec} == 0"
-        #    else:
-        #        assert False
-        if self.pipeline_tag in ["qr", "qs"]:
+        if self.pipeline_tag == "qr_async":
+            vec = int((32 * 4) / DTYPE_BITS[self.dtype])
+            if self.dpad == "t":
+                return f"a.hdim_q % {vec} == 0"
+            else:
+                assert False
+        elif self.pipeline_tag in ["qr", "qs", "qr_async_trload"]:
             bk0submax = K0_MAX_SUBMAX_MAP[self.bk0max]
             if self.dpad == "t":
                 return f"true /*a.hdim_q % {bk0submax} != 0*/"  # TODO: order of get_pipelines() matters! (ugly)
@@ -312,13 +312,13 @@ class FmhaFwdApiTrait:
 
     @property
     def dvcheck(self) -> str:
-        #if self.pipeline_tag == "qr_async":
-        #    vec = int((32 * 4) / DTYPE_BITS[self.dtype])
-        #    if self.dvpad == "t":
-        #        return f"a.hdim_v % {vec} == 0"
-        #    else:
-        #        assert False
-        if self.pipeline_tag in ["qr", "qs"]:
+        if self.pipeline_tag == "qr_async":
+            vec = int((32 * 4) / DTYPE_BITS[self.dtype])
+            if self.dvpad == "t":
+                return f"a.hdim_v % {vec} == 0"
+            else:
+                assert False
+        elif self.pipeline_tag in ["qr", "qs", "qr_async_trload"]:
             bk0submax = K0_MAX_SUBMAX_MAP[self.bk0max]
             if self.dvpad == "t":
                 return f"true /*a.hdim_v % {bk0submax} != 0*/"  # TODO: order of get_pipelines() matters! (ugly)
